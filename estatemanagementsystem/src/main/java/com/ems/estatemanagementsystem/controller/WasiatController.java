@@ -3,6 +3,7 @@ package com.ems.estatemanagementsystem.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -12,15 +13,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.ems.estatemanagementsystem.dto.WasiatDto;
 import com.ems.estatemanagementsystem.entity.AnakAngkatDetail;
 import com.ems.estatemanagementsystem.entity.AnakLelakiDetail;
 import com.ems.estatemanagementsystem.entity.AnakPerempuanDetail;
 import com.ems.estatemanagementsystem.entity.IsteriDetail;
+import com.ems.estatemanagementsystem.entity.SuamiDetail;
+import com.ems.estatemanagementsystem.entity.IbuDetail;
+import com.ems.estatemanagementsystem.entity.BapaDetail;
 import com.ems.estatemanagementsystem.entity.Property;
 import com.ems.estatemanagementsystem.entity.User;
 import com.ems.estatemanagementsystem.entity.Wasiat;
+import com.ems.estatemanagementsystem.service.ContractService;
 import com.ems.estatemanagementsystem.service.PropertyService;
 import com.ems.estatemanagementsystem.service.UserService;
 import com.ems.estatemanagementsystem.service.WasiatService;
@@ -30,11 +36,12 @@ import jakarta.validation.Valid;
 @Controller
 public class WasiatController {
 
+    @Autowired
+    private ContractService contractService;
+
     private final UserService userService;
     private final WasiatService wasiatService;
     private final PropertyService propertyService;
-
-    
 
     public WasiatController(UserService userService, WasiatService wasiatService, PropertyService propertyService) {
         this.userService = userService;
@@ -43,7 +50,7 @@ public class WasiatController {
     }
 
     @GetMapping("/wasiat/create")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(Model model, @RequestParam(name = "contractAddress", required = false) String contractAddress, @RequestParam(name="transactionHash", required = false) String transactionHash) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         User user = userService.getCurrentUser();
@@ -52,26 +59,31 @@ public class WasiatController {
 
         model.addAttribute("username", username);
         model.addAttribute("wasiat", wasiat);
-
+        model.addAttribute("contractAddress", contractAddress);
+        model.addAttribute("transactionHash", transactionHash);
         return "createWasiat";
     }
 
     @PostMapping("/wasiat/create/done")
 
-    public String createWasiat(@ModelAttribute Wasiat wasiat, Model model) {
+    public String createWasiat(@ModelAttribute Wasiat wasiat, Model model, @RequestParam("contractAddress") String contractAddress,
+    @RequestParam("transactionHash") String transactionHash) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         User user = userService.getCurrentUser();
         Long userId = user.getId();
         User loggedInUser = getLoggedInUser();
         List<Property> propertyList = propertyService.getPropertiesByUser(loggedInUser);
+       
 
         model.addAttribute("userId", userId);
         model.addAttribute("username", username);
         model.addAttribute("wasiatShow", wasiat);
         model.addAttribute("loggedInUser", loggedInUser);
         model.addAttribute("propertyList", propertyList);
+        
         wasiatService.saveWasiat(wasiat);
+       
         return "showWasiat";
     }
 
@@ -83,10 +95,6 @@ public class WasiatController {
         return "wasiatList";
     }
     
-
- 
-
-
     @GetMapping("/wasiat/view/{userId}")
 public String viewWasiat(@PathVariable Long userId, Model model) {
     User loggedInUser = getLoggedInUser();
@@ -109,7 +117,6 @@ public String viewWasiat(@PathVariable Long userId, Model model) {
     return "showWasiat";
 }
 
-
     @GetMapping("/wasiat/details/{userId}")
     public String showWasiatDetails(@PathVariable Long userId, Model model) {
         User user = wasiatService.getWasiatDetailsByUserId(userId);
@@ -130,11 +137,26 @@ public String viewWasiat(@PathVariable Long userId, Model model) {
         }
     }   
 
-
     private User getLoggedInUser() {
         return userService.getCurrentUser();
     }
     
+    //Faraid Fucntionalities
+    @GetMapping("/viewFaraid")
+    public String showFaraidDetails(Model model) {
+        WasiatDto wasiatDto = new WasiatDto();
+        
+        // Mock Data for Display
+        wasiatDto.setIsteri("1/8");
+        wasiatDto.setIbu("1/6");
+        wasiatDto.setAyah("1/6");
+        wasiatDto.setAnakLelaki("Asobah");
+        wasiatDto.setAnakPerempuan("Asobah");
+        
+        model.addAttribute("wasiat", wasiatDto);
+        
+        return "viewFaraid";
+    }
 
     // ? ADMIN --------------------------------------------------------------------
 
@@ -169,6 +191,7 @@ public String viewWasiat(@PathVariable Long userId, Model model) {
         if (wasiat == null) {
             return "redirect:/error";
         }
+        
         model.addAttribute("username", username);
         model.addAttribute("wasiat", wasiat);
         return "userUpdateWasiat";
@@ -337,10 +360,16 @@ public String viewWasiat(@PathVariable Long userId, Model model) {
         return "users";
     }
 
+    //Faraid Funtionalities
+    @GetMapping("/admin/calcFaraid/{userId}")
+    public String calcFaraid(){
 
+        return "calcFaraid";    
+    }
 
+    @PostMapping("/admin/calcFaraid/{userId}")
+    public String forFaraid(){
+        return "viewFaraid";
+    }
     //--------------------------------------------------------------------------------------------------------------------
-
-    
-
 }

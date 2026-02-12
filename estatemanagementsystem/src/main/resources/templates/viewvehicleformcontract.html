@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Details Reader</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f6f8fc, #e9ecef);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #1a237e;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #424242;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3f51b5;
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background-color: #3f51b5;
+            color: white;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #1a237e;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-value {
+            color: #424242;
+            word-break: break-all;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #3f51b5;
+            margin: 1rem 0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading.active {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vehicle Details Reader</h1>
+        
+        <div class="input-group">
+            <label for="transactionHash">Transaction Hash</label>
+            <input 
+                type="text" 
+                id="transactionHash" 
+                placeholder="Enter transaction hash (0x...)"
+                autocomplete="off"
+                spellcheck="false"
+            >
+        </div>
+
+        <button onclick="getVehicleDetails()" id="submitBtn">Read Vehicle Details</button>
+        
+        <div id="loading" class="loading">Reading vehicle details...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let web3;
+        if (typeof window.ethereum !== 'undefined') {
+            web3 = new Web3(window.ethereum);
+            window.ethereum.request({ method: 'eth_requestAccounts' });
+        } else if (typeof window.web3 !== 'undefined') {
+            web3 = new Web3(window.web3.currentProvider);
+        } else {
+            alert('Please install MetaMask or another Ethereum-compatible wallet.');
+        }
+
+        async function getVehicleDetails() {
+            const transactionHash = document.getElementById('transactionHash').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            if (!web3.utils.isHexStrict(transactionHash)) {
+                result.innerHTML = '<div class="error">Please enter a valid transaction hash starting with 0x.</div>';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.add('active');
+            result.innerHTML = '';
+
+            try {
+                const transaction = await web3.eth.getTransaction(transactionHash);
+
+                if (!transaction) {
+                    result.innerHTML = '<div class="error">Transaction not found. Please check the hash and try again.</div>';
+                    return;
+                }
+
+                const contractABI = [
+                    {
+                        "inputs": [
+                            {"internalType": "string", "name": "_registrationNumber", "type": "string"},
+                            {"internalType": "string", "name": "_model", "type": "string"},
+                            {"internalType": "uint256", "name": "_year", "type": "uint256"},
+                            {"internalType": "string", "name": "_brand", "type": "string"},
+                            {"internalType": "uint256", "name": "_cc", "type": "uint256"},
+                            {"internalType": "string", "name": "_insuranceStartDate", "type": "string"},
+                            {"internalType": "string", "name": "_insuranceEndDate", "type": "string"},
+                            {"internalType": "uint256", "name": "_insuranceAmount", "type": "uint256"},
+                            {"internalType": "string", "name": "_roadtaxStartDate", "type": "string"},
+                            {"internalType": "string", "name": "_roadtaxEndDate", "type": "string"},
+                            {"internalType": "uint256", "name": "_roadtaxAmount", "type": "uint256"}
+                        ],
+                        "name": "storeVehicleDetails",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [{"internalType": "string", "name": "_registrationNumber", "type": "string"}],
+                        "name": "getVehicleDetails",
+                        "outputs": [
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "uint256", "name": "", "type": "uint256"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "uint256", "name": "", "type": "uint256"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "uint256", "name": "", "type": "uint256"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "string", "name": "", "type": "string"},
+                            {"internalType": "uint256", "name": "", "type": "uint256"}
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    }
+                ];
+
+                if (!transaction.to) {
+                    result.innerHTML = '<div class="error">This transaction does not interact with a smart contract.</div>';
+                    return;
+                }
+
+                const contract = new web3.eth.Contract(contractABI, transaction.to);
+                let decodedData = '';
+
+                if (transaction.input && transaction.input !== '0x') {
+                    const methodSignature = transaction.input.slice(0, 10);
+                    const method = contractABI.find(item => 
+                        item.type === 'function' && 
+                        web3.eth.abi.encodeFunctionSignature(item) === methodSignature
+                    );
+
+                    if (method) {
+                        const params = web3.eth.abi.decodeParameters(method.inputs, transaction.input.slice(10));
+                        decodedData = `
+                            <div class="result-item">
+                                <div class="result-label">Registration Number</div>
+                                <div class="result-value">${params[0]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Model</div>
+                                <div class="result-value">${params[1]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Year</div>
+                                <div class="result-value">${params[2]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Brand</div>
+                                <div class="result-value">${params[3]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">CC</div>
+                                <div class="result-value">${params[4]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Insurance Start Date</div>
+                                <div class="result-value">${params[5]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Insurance End Date</div>
+                                <div class="result-value">${params[6]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Insurance Amount</div>
+                                <div class="result-value">${params[7]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Roadtax Start Date</div>
+                                <div class="result-value">${params[8]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Roadtax End Date</div>
+                                <div class="result-value">${params[9]}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Roadtax Amount</div>
+                                <div class="result-value">${params[10]}</div>
+                            </div>
+                        `;
+                    } else {
+                        decodedData = '<div class="error">Unable to decode input data: Method not found in ABI.</div>';
+                    }
+                } else {
+                    decodedData = '<div class="error">No input data found in this transaction.</div>';
+                }
+
+                result.innerHTML = decodedData;
+            } catch (error) {
+                console.error(error);
+                result.innerHTML = '<div class="error">Error fetching vehicle details. Please try again.</div>';
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

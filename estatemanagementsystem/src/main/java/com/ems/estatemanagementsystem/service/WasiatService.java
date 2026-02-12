@@ -28,6 +28,5 @@ public interface WasiatService {
 
     // Wasiat getWasiatDetailsByUserId(Long userId);
 
-    User getWasiatDetailsByUserId(Long userId);
-    
+    User getWasiatDetailsByUserId(Long userId);    
 }

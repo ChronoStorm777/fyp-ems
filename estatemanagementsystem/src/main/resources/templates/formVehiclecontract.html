@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+    
+    <!-- Favicons -->
+    <link th:href="@{/static/img/favicon.png}" rel="icon">
+    
+    <!-- Google Fonts -->
+    <link th:href="@{https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i}" rel="stylesheet">
+    
+    <!-- Vendor CSS Files -->
+    <link th:href="@{/vendor/animate.css/animate.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/aos/aos.css}" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+    <link th:href="@{/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/remixicon/remixicon.css}" rel="stylesheet">
+    <link th:href="@{/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+
+    <!-- ======= Header ======= -->
+    <header id="header" class="fixed-top d-flex align-items-center">
+        <div class="container d-flex align-items-center justify-content-between">
+            <div class="logo">
+                <h1><a th:href="@{/users}">EMS</a></h1>
+            </div>
+            <nav id="navbar" class="navbar">
+                <ul>
+                    <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
+                    <li><a class="nav-link scrollto" href="#about">About</a></li>
+                    <li><a class="nav-link scrollto" href="#services">Service</a></li>
+                    <li><a class="nav-link scrollto" th:href="@{/propertyList}">Info Harta</a></li>
+                    <li class="dropdown">
+                        <a href="#"><span>More</span> <i class="bi bi-chevron-down"></i></a>
+                        <ul>
+                            <li class="dropdown">
+                                <a href="#"><span>Heirs Management</span> <i class="bi bi-chevron-right"></i></a>
+                                <ul>
+                                    <li><a th:href="@{/wasiat/create}">Add Heirs</a></li>
+                                    <li><a th:href="@{/wasiat/edit/{userId}(userId=${userId})}">Update Heirs</a></li>
+                                </ul>
+                            </li>
+                            <li><a th:href="@{/propertyList}">Add Estate</a></li>
+                            <li><a th:href="@{/wasiat/details/{userId}(userId=${userId})}">Wasiat Information</a></li>
+                            <li><a th:href="@{/wasiat/view/{userId}(userId=${userId})}">Personal Information</a></li>
+                        </ul>
+                    </li>
+                    <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
+                </ul>
+                <nav id="navbar-login" class="navbar-login">
+                    <ul>
+                        <li><a class="nav-link scrollto" th:href="@{/logout}">Log Out</a></li>
+                    </ul>
+                </nav>
+                <i class="bi bi-list mobile-nav-toggle"></i>
+            </nav><!-- .navbar -->
+        </div>
+    </header><!-- End Header -->
+
+    <section id="page-title">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <h1 style="margin-top: 50px;">Info Harta</h1>
+            <p style="margin-top: 30px; max-width: 80%;">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+    </section>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+        }
+        .loading {
+            display: none;
+            color: blue;
+        }
+        #txHash, #vehicleDetails {
+            margin-top: 20px;
+        }
+    </style>
+
+    <h1>Kenderaan</h1>
+
+
+    <div class="form-group">
+        <label for="registrationNumber">Registration Number:</label>
+        <input type="text" id="registrationNumber"required>
+    </div>
+
+    <div class="form-group">
+        <label for="model">Model:</label>
+        <select id="model" name="model" required>
+            <option value="" disabled selected>Pilih Model Kenderaan Anda</option>
+            <option value="Audi">Audi</option>
+            <option value="BMW">BMW</option>
+            <option value="Chery">Chery</option>
+            <option value="Chevrolet">Chevrolet</option>
+            <option value="Ford">Ford</option>
+            <option value="Honda">Honda</option>
+            <option value="Hyundai">Hyundai</option>
+            <option value="Isuzu">Isuzu</option>
+            <option value="Kia">Kia</option>
+            <option value="Lexus">Lexus</option>
+            <option value="Mazda">Mazda</option>
+            <option value="Mercedes">Mercedes</option>
+            <option value="Mitsubishi">Mitsubishi</option>
+            <option value="Nissan">Nissan</option>
+            <option value="Perodua">Perodua</option>
+            <option value="Peugeot">Peugeot</option>
+            <option value="Proton">Proton</option>
+            <option value="Suzuki">Suzuki</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Volkswagen">Volkswagen</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="year">Year:</label>
+        <input type="number" id="year" required>
+    </div>
+
+    <div class="form-group">
+        <label for="brand">Brand:</label>
+        <input type="text" id="brand" required>
+    </div>
+
+    <div class="form-group">
+        <label for="cc">CC:</label>
+        <input type="number" id="cc"  required>
+    </div>
+
+    <div class="form-group">
+        <label for="insuranceStartDate">Insurance Start Date:</label>
+        <input type="text" id="insuranceStartDate" required>
+    </div>
+
+    <div class="form-group">
+        <label for="insuranceEndDate">Insurance End Date:</label>
+        <input type="text" id="insuranceEndDate"  required>
+    </div>
+
+    <div class="form-group">
+        <label for="insuranceAmount">Insurance Amount:</label>
+        <input type="number" id="insuranceAmount" required>
+    </div>
+
+    <div class="form-group">
+        <label for="roadtaxStartDate">Roadtax Start Date:</label>
+        <input type="text" id="roadtaxStartDate"  required>
+    </div>
+
+    <div class="form-group">
+        <label for="roadtaxEndDate">Roadtax End Date:</label>
+        <input type="text" id="roadtaxEndDate"  required>
+    </div>
+
+    <div class="form-group">
+        <label for="roadtaxAmount">Roadtax Amount:</label>
+        <input type="number" id="roadtaxAmount" required>
+    </div>
+
+    <button onclick="storeVehicleDetails()" id="submitBtn">Store Vehicle Details</button>
+    <button onclick="redirectToViewContractVehicle()" id="redirectBtn">Read the Vehicle Details</button>
+
+    <div id="loading" class="loading">Processing transaction...</div>
+    <div id="txHash"></div>
+    <div id="vehicleDetails"></div>
+    <!-- ======= Footer ======= -->
+    <footer id="footer">
+        <div class="container">
+            <h3>EMS</h3>
+            <p>"Inheriting Islam: Preserving Legacies, Ensuring Equity"</p>
+            <div class="social-links">
+                <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
+                <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
+                <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
+                <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
+                <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+            </div>
+            <div class="copyright">
+                &copy; Copyright <strong><span>Selecao</span></strong>. All Rights Reserved
+            </div>
+            <div class="credits">
+                Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+            </div>
+        </div>
+    </footer><!-- End Footer -->
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Vendor JS Files -->
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="assets/vendor/php-email-form/validate.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="assets/js/main.js"></script>
+
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+
+    <script>
+        let web3;
+        // Initialize Web3 and Contract
+        if (typeof window.ethereum !== 'undefined') {
+            web3 = new Web3(window.ethereum);
+            window.ethereum.request({ method: 'eth_requestAccounts' });
+           
+        } else {
+            alert("Please install MetaMask to interact with this page.");
+            throw new Error("MetaMask not found");
+        }
+
+        const contractABI = 
+            [{"inputs":[{"internalType":"string","name":"_registrationNumber","type":"string"},{"internalType":"string","name":"_model","type":"string"},{"internalType":"uint256","name":"_year","type":"uint256"},{"internalType":"string","name":"_brand","type":"string"},{"internalType":"uint256","name":"_cc","type":"uint256"},{"internalType":"string","name":"_insuranceStartDate","type":"string"},{"internalType":"string","name":"_insuranceEndDate","type":"string"},{"internalType":"uint256","name":"_insuranceAmount","type":"uint256"},{"internalType":"string","name":"_roadtaxStartDate","type":"string"},{"internalType":"string","name":"_roadtaxEndDate","type":"string"},{"internalType":"uint256","name":"_roadtaxAmount","type":"uint256"}],"name":"storeVehicleDetails","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"string","name":"registrationNumber","type":"string"},{"indexed":false,"internalType":"string","name":"model","type":"string"},{"indexed":false,"internalType":"uint256","name":"year","type":"uint256"},{"indexed":false,"internalType":"string","name":"brand","type":"string"},{"indexed":false,"internalType":"uint256","name":"cc","type":"uint256"},{"indexed":false,"internalType":"string","name":"insuranceStartDate","type":"string"},{"indexed":false,"internalType":"string","name":"insuranceEndDate","type":"string"},{"indexed":false,"internalType":"uint256","name":"insuranceAmount","type":"uint256"},{"indexed":false,"internalType":"string","name":"roadtaxStartDate","type":"string"},{"indexed":false,"internalType":"string","name":"roadtaxEndDate","type":"string"},{"indexed":false,"internalType":"uint256","name":"roadtaxAmount","type":"uint256"}],"name":"VehicleDetailsStored","type":"event"},{"inputs":[{"internalType":"string","name":"_registrationNumber","type":"string"}],"name":"getVehicleDetails","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"string","name":"","type":"string"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"vehicles","outputs":[{"internalType":"string","name":"registrationNumber","type":"string"},{"internalType":"string","name":"model","type":"string"},{"internalType":"uint256","name":"year","type":"uint256"},{"internalType":"string","name":"brand","type":"string"},{"internalType":"uint256","name":"cc","type":"uint256"},{"internalType":"string","name":"insuranceStartDate","type":"string"},{"internalType":"string","name":"insuranceEndDate","type":"string"},{"internalType":"uint256","name":"insuranceAmount","type":"uint256"},{"internalType":"string","name":"roadtaxStartDate","type":"string"},{"internalType":"string","name":"roadtaxEndDate","type":"string"},{"internalType":"uint256","name":"roadtaxAmount","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
+        // Contract Address (replace with your contract's address)
+        const contractAddress = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836';
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        // Function to store vehicle details
+        async function storeVehicleDetails() {
+
+            const submitBtn = document.getElementById('submitBtn');
+            const registrationNumber = document.getElementById('registrationNumber').value;
+            const model = document.getElementById('model').value;
+            const year = document.getElementById('year').value;
+            const brand = document.getElementById('brand').value;
+            const cc = document.getElementById('cc').value;
+            const insuranceStartDate = document.getElementById('insuranceStartDate').value;
+            const insuranceEndDate = document.getElementById('insuranceEndDate').value;
+            const insuranceAmount = document.getElementById('insuranceAmount').value;
+            const roadtaxStartDate = document.getElementById('roadtaxStartDate').value;
+            const roadtaxEndDate = document.getElementById('roadtaxEndDate').value;
+            const roadtaxAmount = document.getElementById('roadtaxAmount').value;
+
+            if (!registrationNumber || !model || !year || !brand || !cc || !insuranceStartDate || !insuranceEndDate || !insuranceAmount || !roadtaxStartDate || !roadtaxEndDate || !roadtaxAmount) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const accounts = await web3.eth.getAccounts();
+                const senderAddress = accounts[0];
+
+                const result = await contract.methods
+                    .storeVehicleDetails(
+                        registrationNumber,
+                        model,
+                        year,
+                        brand,
+                        cc,
+                        insuranceStartDate,
+                        insuranceEndDate,
+                        insuranceAmount,
+                        roadtaxStartDate,
+                        roadtaxEndDate,
+                        roadtaxAmount
+                    )
+                    .send({ from: senderAddress });
+
+                // Display the transaction hash on the frontend
+                document.getElementById('txHash').innerHTML = `Transaction Hash: <a href="https://etherscan.io/tx/${result.transactionHash}" target="_blank">${result.transactionHash}</a>`;
+
+                // Send the transaction hash to the backend
+                const response = await fetch('/formvehicle/saveTransactionHash', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `transactionHash=${encodeURIComponent(result.transactionHash)}`
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save transaction hash');
+                }
+
+                const responseData = await response.text();
+                console.log(responseData); 
+
+            } catch (error) {
+                console.error("Cant Save to DB", error);
+                alert('Transaction failed. Please check the console for details.');
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+function redirectToViewContractVehicle() {
+            window.location.href = '/view/formvehicle';
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faraid Calculation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 10px 10px 0 0;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .button-group button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+    </style>
+    <script>
+        function incrementValue(inputId) {
+            var input = document.getElementById(inputId);
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decrementValue(inputId) {
+            var input = document.getElementById(inputId);
+            if (parseInt(input.value) > 0) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        function calculateFaraid() {
+            var totalEstate = parseFloat(document.getElementById("totalEstate").value);
+            var numIsteri = parseInt(document.getElementById("numIsteri").value);
+            var numBapa = parseInt(document.getElementById("numBapa").value);
+            var numIbu = parseInt(document.getElementById("numIbu").value);
+            var numAnakLelaki = parseInt(document.getElementById("numAnakLelaki").value);
+            var numAnakPerempuan = parseInt(document.getElementById("numAnakPerempuan").value);
+
+            // Base case shares
+            var shareIsteri = 0;
+            var shareIbu = 0;
+            var shareBapa = 0;
+            var shareAnakLelaki = 0;
+            var shareAnakPerempuan = 0;
+
+            if (numIsteri > 0 && numAnakLelaki > 1 && numAnakPerempuan == 0) {
+            shareIsteri = 1 / 8;
+            shareIbu = 1 / 6;
+            shareBapa = 1 / 6;
+
+            var totalFardhuShare = shareIsteri + shareIbu + shareBapa;
+            var remainingShare = 1 - totalFardhuShare;
+
+            // Calculate Asobah for sons only
+            var asobahRatioTotal = (2 * numAnakLelaki); // Sons share 2 parts each
+            shareAnakLelaki = (2 / asobahRatioTotal) * remainingShare;
+            shareAnakPerempuan = 0; // No daughters, so no share
+
+        } 
+
+        // Scenario 2: If wife (Isteri) > 0, no sons, but at least one daughter
+        else if (numIsteri > 0 && numAnakLelaki == 0 && numAnakPerempuan > 0) {
+            shareIsteri = 1 / 8;
+            shareIbu = 1 / 6;
+
+            var totalFardhuShare = shareIsteri + shareIbu + shareBapa;
+            var remainingShare = 1 - totalFardhuShare;
+
+            // Calculate Asobah for daughters only
+            var asobahRatioTotal = numAnakPerempuan; // Each daughter gets an equal part
+            shareAnakLelaki = 0; // No sons, so no share
+            shareAnakPerempuan = (1 / 2) * remainingShare; // Each daughter gets 1/2 of remaining share
+
+            shareBapa = 1 / 6 + asobahRatioTotal;
+
+            // If more than 1 daughter, they share 2/3 of the remaining share equally
+            if (numAnakPerempuan > 1) {
+                shareAnakPerempuan = (2 / 3) * remainingShare / numAnakPerempuan;
+            }
+        } 
+
+        // Default scenario where both sons and daughters exist
+        else if (numIsteri > 0 && numAnakLelaki > 0 && numAnakPerempuan > 0) {
+            shareIsteri = 1 / 8;
+            shareIbu = 1 / 6;
+            shareBapa = 1 / 6;
+
+            var totalFardhuShare = shareIsteri + shareIbu + shareBapa;
+            var remainingShare = 1 - totalFardhuShare;
+
+            // Calculate Asobah shares
+            var asobahRatioTotal = (2 * numAnakLelaki) + numAnakPerempuan;
+            shareAnakLelaki = (2 / asobahRatioTotal) * remainingShare;
+            shareAnakPerempuan = (1 / asobahRatioTotal) * remainingShare;
+        }
+
+            
+            // Calculate the exact share values
+            var isteriShareValue = shareIsteri * totalEstate;
+            var ibuShareValue = shareIbu * totalEstate;
+            var bapaShareValue = shareBapa * totalEstate;
+            var anakLelakiShareValue = shareAnakLelaki * totalEstate;
+            var anakPerempuanShareValue = shareAnakPerempuan * totalEstate;
+
+            // Display share values and fractions
+            document.getElementById("isteriShare").innerText = isteriShareValue.toFixed(2) + " (1/8)";
+            document.getElementById("ibuShare").innerText = ibuShareValue.toFixed(2) + " (1/6)";
+            document.getElementById("bapaShare").innerText = bapaShareValue.toFixed(2) + " (1/6)";
+            document.getElementById("anakLelakiShare").innerText = anakLelakiShareValue.toFixed(2) + " (2/3 per male child)";
+            document.getElementById("anakPerempuanShare").innerText = anakPerempuanShareValue.toFixed(2) + " (1/3 per female child)";
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Senarai Waris</h2>
+        </div>
+        <div class="table-container">
+            <table>
+                <tr>
+                    <th>Simati</th>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th>Jantina</th>
+                    <td><input type="text" value="Lelaki" readonly></td>
+                </tr>
+                <tr>
+                    <th>Waris Utama</th>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th>Isteri</th>
+                    <td>
+                        <div class="button-group">
+                            <button onclick="decrementValue('numIsteri')">-</button>
+                            <input type="number" id="numIsteri" value="1" min="0">
+                            <button onclick="incrementValue('numIsteri')">+</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Bapa</th>
+                    <td>
+                        <div class="button-group">
+                            <button onclick="decrementValue('numBapa')">-</button>
+                            <input type="number" id="numBapa" value="1" min="0">
+                            <button onclick="incrementValue('numBapa')">+</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Ibu</th>
+                    <td>
+                        <div class="button-group">
+                            <button onclick="decrementValue('numIbu')">-</button>
+                            <input type="number" id="numIbu" value="1" min="0">
+                            <button onclick="incrementValue('numIbu')">+</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Anak Lelaki (AL)</th>
+                    <td>
+                        <div class="button-group">
+                            <button onclick="decrementValue('numAnakLelaki')">-</button>
+                            <input type="number" id="numAnakLelaki" value="1" min="0">
+                            <button onclick="incrementValue('numAnakLelaki')">+</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Anak Perempuan (AP)</th>
+                    <td>
+                        <div class="button-group">
+                            <button onclick="decrementValue('numAnakPerempuan')">-</button>
+                            <input type="number" id="numAnakPerempuan" value="1" min="0">
+                            <button onclick="incrementValue('numAnakPerempuan')">+</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Waris Ganti</th>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+        <div class="table-container">
+            <h3>Total Estate/Property</h3>
+            <table>
+                <tr>
+                    <th>Total Estate</th>
+                    <td><input type="number" value="0" id="totalEstate"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="table-container">
+            <h3>Distribution Among Waris</h3>
+            <table>
+                <tr>
+                    <th>Waris</th>
+                    <th>Share</th>
+                </tr>
+                <tr>
+                    <td>Isteri</td>
+                    <td id="isteriShare"></td>
+                </tr>
+                <tr>
+                    <td>Bapa</td>
+                    <td id="bapaShare"></td>
+                </tr>
+                <tr>
+                    <td>Ibu</td>
+                    <td id="ibuShare"></td>
+                </tr>
+                <tr>
+                    <td>Anak Lelaki</td>
+                    <td id="anakLelakiShare"></td>
+                </tr>
+                <tr>
+                    <td>Anak Perempuan</td>
+                    <td id="anakPerempuanShare"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="button-group">
+            <button onclick="calculateFaraid()">Kira Faraid</button>
+        </div>
+    </div>
+</body>
+</html>

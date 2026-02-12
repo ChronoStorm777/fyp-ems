@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ems.estatemanagementsystem.entity.Land;
 import com.ems.estatemanagementsystem.entity.Property;
@@ -32,6 +34,7 @@ import com.ems.estatemanagementsystem.entity.property.land.Tenancy;
 import com.ems.estatemanagementsystem.entity.property.land.Transfer;
 import com.ems.estatemanagementsystem.entity.property.land.UtilitiesBill;
 import com.ems.estatemanagementsystem.entity.property.land.Waqf;
+import com.ems.estatemanagementsystem.service.ContractService;
 import com.ems.estatemanagementsystem.service.LandService;
 import com.ems.estatemanagementsystem.service.PropertyService;
 import com.ems.estatemanagementsystem.service.UserService;
@@ -102,7 +105,8 @@ public class PropertyController {
     private VehicleService vehicleService;
     @Autowired
     private LandService landService;
-
+    @Autowired
+    private ContractService contractService;
     
     public PropertyController(PropertyService propertyService, UserService userService) {
         this.propertyService = propertyService;
@@ -1138,7 +1142,8 @@ public class PropertyController {
 
     //VEHICLE
     @GetMapping("/formvehicle")
-    public String formvehicle(Model model){
+    public String formvehicle(Model model,
+    @RequestParam(name="transactionHash", required = false) String transactionHash){
         User loggedInUser = getLoggedInUser();
 
         Long userId = loggedInUser.getId();
@@ -1147,25 +1152,70 @@ public class PropertyController {
         Property vehicle = new Vehicle();
         vehicle.setUser(loggedInUser);
 
-        model.addAttribute("Vehicle", vehicle);
-        return "formVehicle";
+        model.addAttribute("Vehicle", vehicle); 
+        model.addAttribute("transactionHash", transactionHash); 
+        return "formVehiclecontract";
     }
 
-    @PostMapping("/saveVehicle")
-    public String saveVehicle(@ModelAttribute("Vehicle") Vehicle vehicle, Model model){
-        List<Vehicle> vehicles = vehicleService.getAllVehicles();
-
-        for (Vehicle vehicleitem : vehicles) {
-            if(vehicle.getCarRegNum().equals(vehicleitem.getCarRegNum())){
-                model.addAttribute("msg", "Vehicle with registration number is existed.");
-                return "formVehicle";
+    @PostMapping("/formvehicle/saveTransactionHash")
+    @ResponseBody
+    public String saveTransactionHash(
+            @RequestParam String transactionHash) {
+                try {
+                    // Save the transaction hash with the user-provided ID
+                    contractService.saveContract(transactionHash, "");
+                    return "Transaction hash saved successfully!";
+                } catch (Exception e) {
+                    return "Failed to save transaction hash: " + e.getMessage();
+                }
             }
-        }
-        
-        vehicleService.saveVehicle(vehicle);
 
-        return "redirect:/propertyList";
-    }
+            @GetMapping("/view/formvehicle")
+            public String viewformvehiclecontract(Model model,
+            @RequestParam(name="transactionHash", required = false) String transactionHash){
+                User loggedInUser = getLoggedInUser();
+        
+                Long userId = loggedInUser.getId();
+                model.addAttribute("userId", userId);
+        
+                Property vehicle = new Vehicle();
+                vehicle.setUser(loggedInUser);
+        
+                model.addAttribute("Vehicle", vehicle); 
+                 model.addAttribute("userId", userId);
+                model.addAttribute("transactionHash", transactionHash); 
+                return "viewvehicleformcontract";
+            }
+
+    // @GetMapping("/formvehicle")
+    // public String formvehicle(Model model){
+    //     User loggedInUser = getLoggedInUser();
+
+    //     Long userId = loggedInUser.getId();
+    //     model.addAttribute("userId", userId);
+
+    //     Property vehicle = new Vehicle();
+    //     vehicle.setUser(loggedInUser);
+
+    //     model.addAttribute("Vehicle", vehicle);
+    //     return "formVehicle";
+    // }
+
+    // @PostMapping("/saveVehicle")
+    // public String saveVehicle(@ModelAttribute("Vehicle") Vehicle vehicle, Model model){
+    //     List<Vehicle> vehicles = vehicleService.getAllVehicles();
+
+    //     for (Vehicle vehicleitem : vehicles) {
+    //         if(vehicle.getCarRegNum().equals(vehicleitem.getCarRegNum())){
+    //             model.addAttribute("msg", "Vehicle with registration number is existed.");
+    //             return "formVehicle";
+    //         }
+    //     }
+        
+    //     vehicleService.saveVehicle(vehicle);
+
+    //     return "redirect:/propertyList";
+    // }
 
     @GetMapping("/formvehicleupdate/{id}")
     public String formvehicleupdate(@PathVariable Long id, Model model){
